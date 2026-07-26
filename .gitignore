@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# PyInstaller and installers
+build/
+dist/
+installer_output/
+*.dmg
+*.pkg
+*.spec.bak
+
+# IDE and macOS
+.idea/
+.DS_Store

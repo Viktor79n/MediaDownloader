@@ -1,0 +1,48 @@
+name: Build installers
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - run: brew install ffmpeg
+      - run: bash build_macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MediaDownloader-macOS
+          path: dist/MediaDownloader-macOS.dmg
+      - uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release'
+        with:
+          files: dist/MediaDownloader-macOS.dmg
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - run: choco install innosetup --no-progress -y
+      - run: cmd /c build_windows.bat
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MediaDownloader-Windows
+          path: installer_output/MediaDownloader-Setup.exe
+      - uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release'
+        with:
+          files: installer_output/MediaDownloader-Setup.exe
