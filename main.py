@@ -9,12 +9,12 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
                              QProgressBar, QFrame, QLineEdit, QScrollArea,
                              QMessageBox, QInputDialog, QProgressDialog)
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtCore import Qt, QUrl, QThread, pyqtSignal, QSettings
+from PyQt6.QtCore import Qt, QUrl, QThread, pyqtSignal, QSettings, QTimer
 from PyQt6.QtGui import QDesktopServices, QFont
 from PyQt6.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from update_service import (
     APP_VERSION, GITHUB_REPOSITORY, UpdateError, check_for_update,
-    download_installer,
+    download_installer, install_macos_update,
 )
 
 
@@ -812,6 +812,19 @@ class VideoApp(QMainWindow):
 
     def _on_update_downloaded(self, installer_path):
         self.update_progress_dialog.close()
+        if sys.platform == "darwin":
+            try:
+                install_macos_update(installer_path)
+            except UpdateError as error:
+                QMessageBox.warning(self, "Обновление", str(error))
+                return
+            QMessageBox.information(
+                self,
+                "Обновление готово",
+                "Программа сама установит обновление в вашу папку «Программы» и перезапустится.",
+            )
+            QTimer.singleShot(300, QApplication.quit)
+            return
         QDesktopServices.openUrl(QUrl.fromLocalFile(installer_path))
         QMessageBox.information(
             self,

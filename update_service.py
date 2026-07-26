@@ -3,12 +3,15 @@
 import os
 import platform
 import re
+import shlex
+import subprocess
+import tempfile
 from pathlib import Path
 
 import requests
 
 
-APP_VERSION = "1.1.2"
+APP_VERSION = "1.1.3"
 GITHUB_REPOSITORY = os.environ.get(
     "MEDIADOWNLOADER_GITHUB_REPOSITORY", "Viktor79n/MediaDownloader"
 )
@@ -90,3 +93,44 @@ def download_installer(release, progress_callback=None):
         raise UpdateError(f"Не удалось скачать обновление: {error}") from error
 
     return str(destination)
+
+
+def install_macos_update(dmg_path):
+    """Ставит обновление в ~/Applications после закрытия текущей программы."""
+    if platform.system() != "Darwin":
+        return False
+
+    dmg = Path(dmg_path).resolve()
+    if not dmg.is_file():
+        raise UpdateError("Файл обновления не найден.")
+
+    target = Path.home() / "Applications" / "MediaDownloader.app"
+    helper_file = tempfile.NamedTemporaryFile(
+        mode="w", prefix="MediaDownloader-update-", suffix=".sh", delete=False
+    )
+    helper_path = Path(helper_file.name)
+    script = f'''#!/bin/bash
+set -euo pipefail
+sleep 2
+mount_dir="$(mktemp -d /tmp/MediaDownloader-mount.XXXXXX)"
+cleanup() {{
+  hdiutil detach "$mount_dir" -quiet 2>/dev/null || true
+  rmdir "$mount_dir" 2>/dev/null || true
+  rm -f "$0"
+}}
+trap cleanup EXIT
+hdiutil attach -nobrowse -readonly -mountpoint "$mount_dir" {shlex.quote(str(dmg))} >/dev/null
+source_app="$(find "$mount_dir" -maxdepth 1 -type d -name 'MediaDownloader.app' -print -quit)"
+test -n "$source_app"
+mkdir -p {shlex.quote(str(target.parent))}
+if [ -d {shlex.quote(str(target))} ]; then
+  mv {shlex.quote(str(target))} {shlex.quote(str(target))}.previous-$(date +%Y%m%d%H%M%S)
+fi
+ditto "$source_app" {shlex.quote(str(target))}
+open {shlex.quote(str(target))}
+'''
+    helper_file.write(script)
+    helper_file.close()
+    helper_path.chmod(0o700)
+    subprocess.Popen(["/bin/bash", str(helper_path)], start_new_session=True)
+    return True
