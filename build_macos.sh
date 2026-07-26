@@ -3,7 +3,7 @@ set -euo pipefail
 
 echo "Сборка MediaDownloader для macOS..."
 
-cd /Users/victor/PycharmProjects/PythonProject1
+cd "$(cd "$(dirname "$0")" && pwd)"
 
 python -m PyInstaller --noconfirm MediaDownloader.spec
 hdiutil create -volname "MediaDownloader" -srcfolder "dist/MediaDownloader.app" \
