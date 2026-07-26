@@ -23,7 +23,7 @@ build_windows.bat
 
 ## Публикация обновления
 
-1. Создайте GitHub Release с тегом новее версии в `update_service.py`, например `v1.1.1`.
+1. Создайте GitHub Release с тегом новее версии в `update_service.py`, например `v1.1.2`.
 2. Прикрепите к релизу `MediaDownloader-macOS.dmg` и `MediaDownloader-Setup.exe`.
 3. Приложение по умолчанию проверяет `Viktor79n/MediaDownloader`. При необходимости
    другой репозиторий можно указать через переменную `MEDIADOWNLOADER_GITHUB_REPOSITORY`.
