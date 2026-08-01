@@ -5,13 +5,14 @@ import platform
 import re
 import shlex
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 import requests
 
 
-APP_VERSION = "1.1.4"
+APP_VERSION = "1.1.5"
 GITHUB_REPOSITORY = os.environ.get(
     "MEDIADOWNLOADER_GITHUB_REPOSITORY", "Viktor79n/MediaDownloader"
 )
@@ -71,7 +72,9 @@ def download_installer(release, progress_callback=None):
     if not url:
         raise UpdateError("У установщика отсутствует ссылка для скачивания.")
 
-    destination = Path.home() / "Downloads" / name
+    updates_dir = Path.home() / "Downloads" / "MediaDownloader Updates"
+    updates_dir.mkdir(parents=True, exist_ok=True)
+    destination = updates_dir / name
     temporary = destination.with_suffix(destination.suffix + ".part")
     total_size = int(asset.get("size") or 0)
 
@@ -96,7 +99,7 @@ def download_installer(release, progress_callback=None):
 
 
 def install_macos_update(dmg_path):
-    """Ставит обновление в ~/Applications после закрытия текущей программы."""
+    """Заменяет текущую macOS-копию приложения после её закрытия."""
     if platform.system() != "Darwin":
         return False
 
@@ -104,7 +107,12 @@ def install_macos_update(dmg_path):
     if not dmg.is_file():
         raise UpdateError("Файл обновления не найден.")
 
-    target = Path.home() / "Applications" / "MediaDownloader.app"
+    executable = Path(sys.executable).resolve()
+    current_app = executable.parents[2] if len(executable.parents) > 2 else None
+    if current_app and current_app.suffix == ".app":
+        target = current_app
+    else:
+        target = Path.home() / "Applications" / "MediaDownloader.app"
     helper_file = tempfile.NamedTemporaryFile(
         mode="w", prefix="MediaDownloader-update-", suffix=".sh", delete=False
     )

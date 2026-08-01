@@ -59,7 +59,7 @@ app = BUNDLE(
     icon=None,
     bundle_identifier=None,
     info_plist={
-        'CFBundleShortVersionString': '1.1.4',
-        'CFBundleVersion': '1.1.4',
+        'CFBundleShortVersionString': '1.1.5',
+        'CFBundleVersion': '1.1.5',
     },
 )
