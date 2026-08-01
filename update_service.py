@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 
 
-APP_VERSION = "1.1.3"
+APP_VERSION = "1.1.4"
 GITHUB_REPOSITORY = os.environ.get(
     "MEDIADOWNLOADER_GITHUB_REPOSITORY", "Viktor79n/MediaDownloader"
 )

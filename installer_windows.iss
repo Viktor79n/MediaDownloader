@@ -1,5 +1,5 @@
 #define AppName "MediaDownloader"
-#define AppVersion "1.1.3"
+#define AppVersion "1.1.4"
 #define AppPublisher "MediaDownloader"
 
 [Setup]

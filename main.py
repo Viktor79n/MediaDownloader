@@ -203,7 +203,32 @@ class DownloadThread(QThread):
             print(f"[ЗАГРУЗКА] Папка: {self.save_path}")
             print(f"{'=' * 70}")
 
-            if 'Авто-Формат (магнитола' in self.format_type:
+            if '4K HDR' in self.format_type:
+                fmt = (
+                    'bestvideo[height<=2160][dynamic_range=HDR]+bestaudio/'
+                    'bestvideo[height<=2160]+bestaudio/best[height<=2160]'
+                )
+                print("[ЗАГРУЗКА] 📺 4K HDR (если есть у источника)")
+            elif '4K UHD' in self.format_type:
+                fmt = (
+                    'bestvideo[height<=2160][ext=mp4]+bestaudio[ext=m4a]/'
+                    'bestvideo[height<=2160]+bestaudio/best[height<=2160]'
+                )
+                print("[ЗАГРУЗКА] 📺 4K UHD до 2160p")
+            elif '3D' in self.format_type:
+                fmt = (
+                    'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/'
+                    'bestvideo[height<=1080]+bestaudio/best[height<=1080]'
+                )
+                print("[ЗАГРУЗКА] 🕶️ Исходное 3D-видео (если оно есть у источника)")
+            elif '720p' in self.format_type:
+                fmt = (
+                    'bestvideo[vcodec^=avc][height<=720][ext=mp4]+'
+                    'bestaudio[acodec^=mp4a][ext=m4a]/'
+                    'best[vcodec^=avc][height<=720][ext=mp4]/best[height<=720]'
+                )
+                print("[ЗАГРУЗКА] 📺 Старый ТВ: H.264 MP4 до 720p")
+            elif 'Авто-Формат (магнитола' in self.format_type:
                 fmt = (
                     'bestvideo[vcodec^=avc][height<=1024][ext=mp4]+'
                     'bestaudio[acodec^=mp4a][ext=m4a]/'
@@ -452,11 +477,19 @@ class VideoApp(QMainWindow):
 
         self.format_combo = QComboBox()
         self.format_combo.addItems([
+            "📺 ТВ 4K UHD до 2160p (MP4)",
+            "🌈 ТВ 4K HDR до 2160p (если доступно)",
+            "📺 ТВ MP4 H.264 до 1080p (универсальный)",
+            "📺 Старый ТВ MP4 H.264 до 720p",
+            "🕶️ ТВ 3D до 1080p (только исходное 3D)",
             "🏆 Макс. качество MP4 (QuickTime)",
-            "📺 MP4 до 1080p (совместимый)",
             "🚗 Авто-Формат (магнитола 10')",
             "🎵 MP3 Аудио"
         ])
+        self.format_combo.setToolTip(
+            "3D нельзя создать из обычного ролика: этот профиль сохраняет 3D, "
+            "только если оно уже есть в исходном видео."
+        )
         self.format_combo.setObjectName("formatCombo")
         layout.addWidget(self.format_combo)
 
